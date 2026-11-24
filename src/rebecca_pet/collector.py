@@ -23,12 +23,17 @@ MAX_OUTPUT_BYTES = 64 * 1024
 
 
 def output_path(value: str | Path) -> Path:
-    """Reject both lexical C: paths and D: junctions that resolve onto C:."""
-    if PureWindowsPath(str(value)).drive.upper() == "C:":
-        raise ValueError("output must not be on C drive")
+    """Only normal D: paths on Windows; reject device namespaces and junction escapes."""
+    def validate(candidate: str) -> None:
+        normalized = candidate.replace("/", "\\")
+        if normalized.startswith(("\\\\?\\", "\\\\.\\", "\\??\\")):
+            raise ValueError("device-namespace output paths are not supported")
+        drive = PureWindowsPath(candidate).drive.upper()
+        if drive == "C:" or (os.name == "nt" and drive and drive != "D:"):
+            raise ValueError("Windows output must be on D drive")
+    validate(str(value))
     path = Path(value).expanduser().resolve()
-    if PureWindowsPath(str(path)).drive.upper() == "C:":
-        raise ValueError("output must not resolve to C drive")
+    validate(str(path))
     if not path.name or path.is_dir():
         raise ValueError("output must be a file path")
     return path

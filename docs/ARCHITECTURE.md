@@ -13,7 +13,7 @@
 - `Start-Rebecca.cmd` 与 `scripts/Start-Rebecca.ps1`：配置发现、D 盘临时目录、启动/失败反馈。
 - `tests/`：合成 SQLite、状态转换和协议边界；不保存真实 T3 会话内容。
 
-以上是预定接口和布局；文件尚未出现时不要当作已经实现。
+以上模块已在 v0.1 实现；验证范围和未验收场景见 [VALIDATION.md](VALIDATION.md)。
 
 ## ADR-002：T3 0.1.11 版本适配的只读 SQLite
 
@@ -39,7 +39,7 @@
 
 ## ADR-005：单向文件协议与生命周期
 
-采集器通过临时 sibling 文件 + 原子替换更新 `data/status.json`。WPF 只读取规定的 schema，执行长度、类型、版本与时间新鲜度校验。无 IPC 控制任务接口，不支持审批或注入提示。
+采集器通过临时 sibling 文件 + 原子替换更新 `data/status-live.json` 或 `data/status-demo.json`，隔离真实与演示快照。WPF 只读取规定的 schema，执行长度、类型、版本与时间新鲜度校验。无 IPC 控制任务接口，不支持审批或注入提示。
 
 启动器启动拥有的采集进程，窗口关闭时仅关闭本实例的进程。重复启动由单实例互斥量或锁处理；不能靠枚举全部 Python/PowerShell 杀进程。配置和进程标记含本机信息，默认不入 Git。
 

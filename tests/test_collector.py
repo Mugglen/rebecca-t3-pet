@@ -52,7 +52,9 @@ class CollectorTests(unittest.TestCase):
         self.assertTrue(json.loads(self.path.read_text())["ok"])
 
     def test_c_drive_paths_rejected_lexically(self):
-        for value in ("C:\\temp\\state.json", "c:/state.json", "C:state.json"):
+        for value in ("C:\\temp\\state.json", "c:/state.json", "C:state.json",
+                      r"\\?\C:\temp\state.json", r"\\.\C:\temp\state.json",
+                      "//?/C:/temp/state.json", r"\\?\GLOBALROOT\Device\HarddiskVolume1\state.json"):
             with self.subTest(value=value), self.assertRaises(ValueError):
                 output_path(value)
 

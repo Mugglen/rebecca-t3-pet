@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
@@ -9,9 +9,10 @@ import tempfile
 import threading
 import time
 import unittest
+from unittest.mock import patch
 
 from rebecca_pet.adapter import MAX_JSON_BYTES, ReadError, SQLiteAdapter, read_descriptor
-from rebecca_pet.state import Failure, Snapshot
+from rebecca_pet.state import Failure, Reducer, Snapshot, timestamp
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -147,6 +148,69 @@ class AdapterFixture(unittest.TestCase):
         self.add_run("new", status="completed", ordinal=2)
         result = self.adapter().read()
         self.assertEqual({r.run_id for r in result.threads[0].runs}, {"old", "new"})
+
+    def check_older_terminal_transition(self, terminal_status):
+        self.thread()
+        self.add_run("old", ordinal=1)
+        self.add_run("new", ordinal=2)
+        with writable_db(self.db) as connection:
+            connection.execute("UPDATE orchestration_v2_projection_runs SET requested_at=?", ("2020-01-01T00:00:00Z",))
+        adapter, reducer = self.adapter(), Reducer()
+        start = datetime(2030, 1, 1, tzinfo=timezone.utc)
+        with patch("rebecca_pet.adapter.utc_now", return_value=start):
+            reducer.reduce(adapter.read())
+        with writable_db(self.db) as connection:
+            # Missing completed_at deliberately proves remembered active IDs
+            # are followed, rather than relying only on a timestamp cursor.
+            connection.execute("UPDATE orchestration_v2_projection_runs SET status=? WHERE run_id='old'", (terminal_status,))
+        with patch("rebecca_pet.adapter.utc_now", return_value=start + timedelta(seconds=2)):
+            snapshot = adapter.read()
+        self.assertIn(("old", terminal_status), {(r.run_id, r.status) for r in snapshot.threads[0].runs})
+        output = reducer.reduce(snapshot)
+        self.assertEqual(output["counts"]["working"], 1)
+        self.assertEqual(output["event"]["kind"], "error" if terminal_status == "failed" else "success")
+
+    def test_older_observed_failure_is_not_lost_behind_new_run(self):
+        self.check_older_terminal_transition("failed")
+
+    def test_older_observed_success_is_not_lost_behind_new_run(self):
+        self.check_older_terminal_transition("completed")
+
+    def test_fast_terminal_run_is_seen_even_when_not_latest(self):
+        self.thread()
+        self.add_run("initial", status="completed")
+        adapter, reducer = self.adapter(), Reducer()
+        start = datetime(2030, 1, 1, tzinfo=timezone.utc)
+        with patch("rebecca_pet.adapter.utc_now", return_value=start):
+            reducer.reduce(adapter.read())
+        self.add_run("fast", status="completed", ordinal=2)
+        self.add_run("latest", ordinal=3)
+        stamp = timestamp(start + timedelta(seconds=1))
+        with writable_db(self.db) as connection:
+            connection.execute("UPDATE orchestration_v2_projection_runs SET requested_at=? WHERE run_id IN ('fast','latest')", (stamp,))
+            connection.execute("UPDATE orchestration_v2_projection_runs SET completed_at=? WHERE run_id='fast'", (stamp,))
+        with patch("rebecca_pet.adapter.utc_now", return_value=start + timedelta(seconds=2)):
+            output = reducer.reduce(adapter.read())
+        self.assertEqual(output["state"], "working")
+        self.assertEqual(output["event"]["kind"], "success")
+
+    def test_reconnect_discards_terminal_cursor_backlog(self):
+        self.thread()
+        self.add_run()
+        adapter = self.adapter()
+        self.assertIsInstance(adapter.read(), Snapshot)
+        adapter.descriptor_reader = lambda *_: dict(DESCRIPTOR, environmentId="wrong")
+        self.assertIsInstance(adapter.read(), Failure)
+        adapter.descriptor_reader = lambda *_: dict(DESCRIPTOR)
+        with writable_db(self.db) as connection:
+            connection.execute("UPDATE orchestration_v2_projection_runs SET status='completed'")
+        for ordinal in range(2, 8):
+            self.add_run(f"outage-{ordinal}", status="completed", ordinal=ordinal)
+        self.add_run("resumed", ordinal=8)
+        with patch("rebecca_pet.adapter.MAX_ROWS", 3):
+            snapshot = adapter.read()
+        self.assertIsInstance(snapshot, Snapshot)
+        self.assertEqual({r.run_id for r in snapshot.threads[0].runs}, {"resumed"})
 
     def test_requests_map_known_and_unknown_blocking(self):
         self.thread()

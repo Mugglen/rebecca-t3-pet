@@ -67,6 +67,7 @@ def discover():
 
 
 def download_images():
+    (ROOT / "preview-images").mkdir(parents=True, exist_ok=True)
     sys.path.insert(0, str(ROOT / ".tools"))
     from PIL import Image
     discovered = json.loads((ROOT / "source-pages" / "discovered.json").read_text(encoding="utf-8"))

@@ -13,7 +13,7 @@ import threading
 import time
 from typing import Callable
 
-from .state import Failure, KNOWN_STATUSES, Request, Run, Snapshot, Thread, parse_timestamp, utc_now
+from .state import ACTIVE, Failure, KNOWN_STATUSES, Request, Run, Snapshot, Thread, parse_timestamp, timestamp, utc_now
 
 
 SUPPORTED_VERSIONS = frozenset({"0.1.11"})
@@ -156,23 +156,34 @@ class SQLiteAdapter:
             raise ValueError("timeout must be between 0.1 and 10 seconds")
         self.timeout = timeout
         self.descriptor_reader = descriptor_reader
+        self._service_id: str | None = None
+        self._active_run_ids: set[str] = set()
+        self._last_read_at: str | None = None
 
     def read(self) -> Snapshot | Failure:
         try:
             return self._read()
         except ReadError as exc:
-            return exc.failure
+            failure = exc.failure
         except (FileNotFoundError, PermissionError, OSError):
-            return Failure("offline", "runtime_unavailable", "暂时无法读取 T3 状态")
+            failure = Failure("offline", "runtime_unavailable", "暂时无法读取 T3 状态")
         except (ValueError, TypeError, KeyError):
-            return Failure("incompatible", "invalid_metadata", "T3 状态格式尚不支持", "incompatible")
+            failure = Failure("incompatible", "invalid_metadata", "T3 状态格式尚不支持", "incompatible")
         except sqlite3.Error as exc:
             if any(marker in str(exc).lower() for marker in ("malformed json", "no such column", "no such table", "not a database", "database disk image is malformed")):
-                return Failure("incompatible", "invalid_database_structure", "T3 状态格式尚不支持", "incompatible")
-            return Failure("offline", "database_unavailable", "T3 状态读取失败", "error")
+                failure = Failure("incompatible", "invalid_database_structure", "T3 状态格式尚不支持", "incompatible")
+            else:
+                failure = Failure("offline", "database_unavailable", "T3 状态读取失败", "error")
+        # Reconnection starts a fresh baseline in both adapter and reducer.
+        # Do not accumulate an unbounded terminal backlog during an outage.
+        self._service_id = None
+        self._active_run_ids.clear()
+        self._last_read_at = None
+        return failure
 
     def _read(self) -> Snapshot:
         deadline = time.monotonic() + self.timeout
+        read_started_at = utc_now()
         userdata = self.home / "userdata"
         runtime = _read_json(userdata / "server-runtime.json")
         version = _safe_id(runtime.get("serverVersion"), "version")
@@ -203,6 +214,10 @@ class SQLiteAdapter:
             raise incompatible("unsupported_database_migration", version)
         if time.monotonic() >= deadline:
             raise unavailable("snapshot_timeout", version=version)
+        service_id = f"{environment_id}:{runtime['pid']}:{started_at}"
+        same_service = service_id == self._service_id
+        tracked_ids = sorted(self._active_run_ids) if same_service else []
+        since = self._last_read_at if same_service else None
 
         db_path = (userdata / "statev2.sqlite").resolve()
         # mode=ro prevents creation. Do not use immutable=1: live WAL must be read.
@@ -233,6 +248,31 @@ class SQLiteAdapter:
                 WHERE r.status IN ('preparing', 'queued', 'starting', 'running', 'waiting')
                   AND t.archived_at IS NULL AND t.deleted_at IS NULL
             """)
+            # Older runs must remain observable when they stop being ACTIVE.
+            # Query remembered IDs in bounded batches, and terminal changes
+            # since the previous successful read to catch short runs that both
+            # start and finish between polls (even if they are no longer latest).
+            terminal = []
+            for offset in range(0, len(tracked_ids), 400):
+                batch = tracked_ids[offset:offset + 400]
+                placeholders = ",".join("?" for _ in batch)
+                terminal.extend(self._query(connection, f"""
+                    SELECT r.run_id, r.thread_id, r.status, r.requested_at, r.completed_at
+                    FROM orchestration_v2_projection_runs AS r
+                    JOIN orchestration_v2_projection_threads AS t ON t.thread_id = r.thread_id
+                    WHERE r.run_id IN ({placeholders})
+                      AND t.archived_at IS NULL AND t.deleted_at IS NULL
+                """, tuple(batch)))
+            if since is not None:
+                terminal.extend(self._query(connection, """
+                    SELECT r.run_id, r.thread_id, r.status, r.requested_at, r.completed_at
+                    FROM orchestration_v2_projection_runs AS r
+                    JOIN orchestration_v2_projection_threads AS t ON t.thread_id = r.thread_id
+                    WHERE r.status IN ('completed', 'failed', 'interrupted', 'cancelled', 'rolled_back')
+                      AND (julianday(r.completed_at) >= julianday(?)
+                           OR julianday(r.requested_at) >= julianday(?))
+                      AND t.archived_at IS NULL AND t.deleted_at IS NULL
+                """, (since, since)))
             requests = self._query(connection, """
                 SELECT q.runtime_request_id, q.thread_id, q.kind,
                        json_extract(q.payload_json, '$.responseCapability.type') AS response_type
@@ -251,8 +291,13 @@ class SQLiteAdapter:
         after = _read_json(userdata / "server-runtime.json")
         if any(after.get(key) != runtime.get(key) for key in ("pid", "startedAt", "host", "port", "serverVersion")):
             raise unavailable("service_restarted", version=version)
-        groups = self._group(threads, active, requests, version)
-        return Snapshot(utc_now(), f"{environment_id}:{runtime['pid']}:{started_at}",
+        groups = self._group(threads, [*active, *terminal], requests, version)
+        self._service_id = service_id
+        self._active_run_ids = {r.run_id for t in groups for r in t.runs if r.status in ACTIVE}
+        # Use the read's start, not its end, so a DB commit during the read
+        # cannot fall through the gap between consistent snapshots.
+        self._last_read_at = timestamp(read_started_at)
+        return Snapshot(utc_now(), service_id,
                         version, groups, self.project_ids, LIMITATIONS)
 
     @staticmethod
@@ -268,8 +313,8 @@ class SQLiteAdapter:
             raise incompatible("sqlite_json_unavailable", version) from exc
 
     @staticmethod
-    def _query(connection: sqlite3.Connection, query: str) -> list[sqlite3.Row]:
-        rows = connection.execute(query).fetchmany(MAX_ROWS + 1)
+    def _query(connection: sqlite3.Connection, query: str, parameters: tuple = ()) -> list[sqlite3.Row]:
+        rows = connection.execute(query, parameters).fetchmany(MAX_ROWS + 1)
         if len(rows) > MAX_ROWS:
             raise incompatible("snapshot_row_limit")
         return rows
