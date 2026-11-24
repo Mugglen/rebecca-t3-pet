@@ -12,6 +12,8 @@ import sys
 import urllib.parse
 
 ROOT = Path(__file__).resolve().parent
+(ROOT / ".tmp").mkdir(parents=True, exist_ok=True)
+os.environ["TEMP"] = os.environ["TMP"] = str(ROOT / ".tmp")
 SOURCES = [
     {"id": "cdpr-edgerunners", "title": "Cyberpunk: Edgerunners official character page", "url": "https://www.cyberpunk.net/en/edgerunners", "class": "official-character-art", "owner": "CD PROJEKT RED / TRIGGER", "notes": "Original anime character identity and color references."},
     {"id": "gsc-nendoroid", "title": "Nendoroid Rebecca (2186)", "url": "https://www.goodsmile.com/en/product/12203/Nendoroid%20Rebecca", "class": "official-licensed-chibi", "owner": "Good Smile Company / CD PROJEKT", "notes": "Chibi proportions, expressions and compact silhouettes."},
@@ -27,10 +29,14 @@ def fetch(url: str, path: Path) -> tuple[bool, str]:
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists() and path.stat().st_size:
         return True, "cached"
+    partial = path.with_suffix(path.suffix + ".part")
+    proxy = ["--proxy", os.environ["REFERENCE_PROXY"]] if os.environ.get("REFERENCE_PROXY") else []
     completed = subprocess.run(
-        ["curl.exe", "--location", "--fail", "--silent", "--show-error", "--retry", "1", "--connect-timeout", "15", "--max-time", "120", "--output", str(path), url],
+        ["curl.exe", "--location", "--fail", "--silent", "--show-error", "--retry", "1", "--connect-timeout", "15", "--max-time", "120", *proxy, "--output", str(partial), url],
         capture_output=True, text=True, cwd=ROOT,
     )
+    if completed.returncode == 0:
+        partial.replace(path)
     return completed.returncode == 0, completed.stderr.strip()[:300]
 
 
@@ -103,8 +109,23 @@ def download_images():
     (ROOT / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def download_guide():
+    sys.path.insert(0, str(ROOT / ".tools"))
+    import pymupdf
+    path = ROOT / "originals" / "rebecca-cosplay-guide-en-proxy.pdf"
+    ok, error = fetch(PDF["url"], path)
+    if not ok:
+        raise RuntimeError(error)
+    with pymupdf.open(path) as document:
+        print(f"Guide: {path.stat().st_size} bytes, {len(document)} pages")
+        for i, page in enumerate(document, 1):
+            page.get_pixmap(matrix=pymupdf.Matrix(1.2, 1.2), alpha=False).save(ROOT / "originals" / f"cdpr-cosplay-{i:02}.png")
+
+
 if __name__ == "__main__":
-    if "--download" in sys.argv:
+    if "--guide" in sys.argv:
+        download_guide()
+    elif "--download" in sys.argv:
         download_images()
     else:
         discover()

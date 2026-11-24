@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "file": "rebecca-atlas.png",
+  "width": 1536,
+  "height": 1024,
+  "columns": 3,
+  "rows": 2,
+  "cell_width": 512,
+  "cell_height": 512,
+  "poses": ["idle", "working", "attention", "success", "error", "offline"],
+  "animation_type": "six-static-poses-with-wpf-motion",
+  "sha256": "851a82966ffad1d6c9b1b8554f61f1a24bdb85fbef7c0e3539b3ea5ad1d31f5b"
+}

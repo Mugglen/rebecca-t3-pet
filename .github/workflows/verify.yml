@@ -1,0 +1,39 @@
+name: Verify desktop pet
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Python status and adapter tests
+        run: |
+          $env:PYTHONPATH = Join-Path $pwd 'src'
+          $env:TEMP = Join-Path $pwd 'tmp'
+          $env:TMP = $env:TEMP
+          New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
+          python -B -m unittest discover -s tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: WPF protocol and rendering smoke
+        run: |
+          $env:TEMP = Join-Path $pwd 'tmp'
+          $env:TMP = $env:TEMP
+          powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File scripts/Test-Desktop.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
