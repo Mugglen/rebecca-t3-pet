@@ -1,0 +1,20 @@
+# Local runtime output and scratch data
+/data/
+/logs/
+/tmp/
+/cache/
+/build/
+/dist/
+/.venv/
+__pycache__/
+*.pyc
+node_modules/
+.env
+.env.*
+!.env.example
+
+# Machine-specific settings and sensitive state
+config.local.json
+*.db
+*.db-shm
+*.db-wal
