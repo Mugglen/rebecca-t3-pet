@@ -6,7 +6,7 @@
 
 ## 当前进度
 
-项目初始化阶段，已创建独立 Git 仓库并注册到本机 T3 Code 项目列表。已经确认产品方向，并开展本机状态来源核对。**目前还没有可运行的桌宠、角色成品或启动程序。**
+规格与参考收集阶段已完成，已创建 [Mugglen 私有仓库](https://github.com/Mugglen/rebecca-t3-pet) 和 [10 个开发 tickets](docs/TICKETS.md)。首版实现正在开发；此处的规格基线尚不包含可运行桌宠。
 
 ## 已确认的需求
 
@@ -17,9 +17,11 @@
 
 ## 继续开发从这里开始
 
-1. [产品与角色设计](docs/PRODUCT.md)：首版范围、动作语义和验收条件。
-2. [状态接入调研](docs/STATUS-INTEGRATION.md)：实测证据、尚未确认的内容和接入边界。
-3. [项目工作规则](AGENTS.md)：后续开发和验证约定。
+1. [完整规格](docs/SPEC.md) 与 [架构决策](docs/ARCHITECTURE.md)：范围、协议、交互和验收。
+2. [开发 tickets](docs/TICKETS.md)：GitHub 工作项及依赖。
+3. [官方参考库](references/INDEX.md) 与 [美术规格](docs/ART-DIRECTION.md)：原作形象、Q 版比例与动作。
+4. [状态技术验证](docs/STATUS-SPIKE.md)：实际独立查询、SQL 与健康入口；[早期调研](docs/STATUS-INTEGRATION.md) 为历史记录。
+5. [项目工作规则](AGENTS.md)：后续开发和验证约定。
 
 下一里程碑：先完成只读状态探针，证明能够稳定区分真实运行、待处理请求、完成和断连，再接入透明桌面窗口与角色动画。
 

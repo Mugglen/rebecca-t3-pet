@@ -18,3 +18,14 @@ config.local.json
 *.db
 *.db-shm
 *.db-wal
+
+# Downloaded research media and local contact sheets; provenance is tracked.
+/references/originals/
+/references/.tools/
+/references/.cache/
+/references/.tmp/
+/references/source-pages/
+/references/preview-images/
+/references/gallery.html
+/references/contact-sheet*.png
+/references/download-errors.log
