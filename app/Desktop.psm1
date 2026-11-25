@@ -208,7 +208,7 @@ function Restore-RebeccaTopmost {
     param($Context)
     if (-not $Context.TopmostRequested -or $Context.IsClosed -or -not $Context.Window.IsVisible -or
         $Context.Window.WindowState -eq [Windows.WindowState]::Minimized) { return $false }
-    $handle=(New-Object Windows.Interop.WindowInteropHelper($Context.Window)).Handle
+    $handle=[Windows.Interop.WindowInteropHelper]::new($Context.Window).Handle
     if ($handle -eq [IntPtr]::Zero -or -not [RebeccaPet.WindowLayerNative]::IsWindow($handle) -or
         -not [RebeccaPet.WindowLayerNative]::IsWindowVisible($handle) -or
         [RebeccaPet.WindowLayerNative]::IsIconic($handle)) { return $false }
@@ -312,6 +312,7 @@ function Set-RebeccaVisual {
     $labels=@{idle='待机';working='工作中';attention='需要你';success='已完成';error='异常';stopped='已停止';offline='未连接';incompatible='不兼容'}
     $Context.StateLabel.Text=$labels[$Snapshot.state]
     $Context.Message.ToolTip=$Snapshot.message
+    $Context.Badge.ToolTip=$Snapshot.message
     if ($Context.State -ceq $Snapshot.state) { return }
     $Context.State=$Snapshot.state
     $frame=$Snapshot.state
