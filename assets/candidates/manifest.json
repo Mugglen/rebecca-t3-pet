@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "selection_status": "awaiting-user-selection",
+  "selection_status": "deferred-by-user",
   "source": "../rebecca-idle-seated.png",
   "method": "built-in-imagegen",
   "candidates": [
