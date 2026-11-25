@@ -8,6 +8,32 @@
   "cell_width": 512,
   "cell_height": 512,
   "poses": ["idle", "working", "attention", "success", "error", "offline"],
-  "animation_type": "six-static-poses-with-wpf-motion",
-  "sha256": "851a82966ffad1d6c9b1b8554f61f1a24bdb85fbef7c0e3539b3ea5ad1d31f5b"
+  "animation_type": "working-gif-and-static-poses-with-wpf-motion",
+  "sha256": "851a82966ffad1d6c9b1b8554f61f1a24bdb85fbef7c0e3539b3ea5ad1d31f5b",
+  "animations": {
+    "working": {
+      "file": "rebecca-working-typing.gif",
+      "sheet": "rebecca-working-typing-sheet.png",
+      "width": 512,
+      "height": 512,
+      "frames": 6,
+      "frame_delay_ms": 140,
+      "loop_duration_ms": 840,
+      "sha256": "9848b7a6440d152f3d5da53532ef47d52ae0c7aa069acb021c253b8cdd405c92"
+    }
+  },
+  "pose_overrides": {
+    "idle": {
+      "file": "rebecca-idle-seated.png",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "73a4d663075acb272e041f7c5c610050b5ac8528a2bfea350cf3e2a44d7e15c0"
+    },
+    "working": {
+      "file": "rebecca-working-seated.png",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "d3024fa0d2e18586e593a1ec04dc76a1b50a40fe75ad5847bca0aa32b4f22313"
+    }
+  }
 }
