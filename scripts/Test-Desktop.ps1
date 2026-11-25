@@ -68,6 +68,41 @@ try{
     Assert-Test ([IO.File]::Exists($settingsPath)) 'View preferences not saved.'
 }finally{$view.Window.Close()}
 $animationResult=& (Join-Path $PSScriptRoot 'Test-Animation.ps1') -OutputDirectory (Join-Path $OutputDirectory 'animation') -PassThru
-$result=[ordered]@{checks=$script:checks;animation_checks=$animationResult.checks;result='passed';mode='synthetic';render=(Join-Path $OutputDirectory 'desktop-working.png');manual_validation='Multi-monitor DPI, pointer hit testing, drag and visual polish remain manual.'}
+$topmostResult=& (Join-Path $PSScriptRoot 'Test-Topmost.ps1') -OutputDirectory (Join-Path $OutputDirectory 'topmost') -PassThru
+# Exercise the production interaction loop, including the case where no
+# worker snapshot exists yet. A heartbeat must not require collector I/O.
+$fixture=[Windows.Window]::new()
+$shared=[hashtable]::Synchronized(@{Pinned=$false;Ended=$false;Packet=$null})
+$seen=[Collections.Generic.List[string]]::new()
+try {
+    Add-Type -Path (Join-Path $root 'app\PetDispatcher.cs') -ReferencedAssemblies @([Windows.Window].Assembly.Location,[Windows.Input.Mouse].Assembly.Location,[Windows.Threading.Dispatcher].Assembly.Location,'System.Xaml')
+    $refresh=[EventHandler]{
+        if ($shared.Stale) { $seen.Add('stale') } else { $seen.Add($shared.DisplayPacket.DisplayKey) }
+    }.GetNewClosure()
+    $timer=[RebeccaPet.PetDispatcher]::Attach($fixture,$shared,$refresh)
+    $timer.Interval=[TimeSpan]::FromMilliseconds(25)
+    $fixture.Left=-10000;$fixture.Top=-10000;$fixture.ShowActivated=$false;$fixture.ShowInTaskbar=$false;$fixture.Show()
+    function Pump-InputFixture {
+        $frame=[Windows.Threading.DispatcherFrame]::new()
+        $end=[Windows.Threading.DispatcherTimer]::new()
+        $end.Interval=[TimeSpan]::FromMilliseconds(175)
+        $end.Add_Tick({$end.Stop();$frame.Continue=$false}.GetNewClosure())
+        $end.Start();[Windows.Threading.Dispatcher]::PushFrame($frame)
+    }
+    Pump-InputFixture
+    Assert-Test ($seen.Count -eq 0) 'Empty monitor ran a UI refresh.'
+    $shared.Packet=@{DisplayKey='working';Expires=[DateTime]::UtcNow.AddMinutes(1)}
+    Pump-InputFixture
+    $shared.Packet=@{DisplayKey='working';Expires=[DateTime]::UtcNow.AddMinutes(1)}
+    Pump-InputFixture
+    Assert-Test (($seen -join ',') -eq 'working') 'Duplicate packets repeatedly entered PowerShell on the UI thread.'
+    $shared.Packet=@{DisplayKey='working';Expires=[DateTime]::UtcNow.AddMinutes(-1)}
+    Pump-InputFixture
+    Assert-Test (($seen -join ',') -eq 'working,stale') 'A stalled worker left an expired state visible.'
+    $shared.Packet=@{DisplayKey='working';Expires=[DateTime]::UtcNow.AddMinutes(1)}
+    Pump-InputFixture
+    Assert-Test (($seen -join ',') -eq 'working,stale,working') 'A resumed worker did not refresh the pet.'
+} finally { $fixture.Close() }
+$result=[ordered]@{checks=$script:checks;animation_checks=$animationResult.checks;topmost_checks=$topmostResult.checks;result='passed';mode='synthetic';render=(Join-Path $OutputDirectory 'desktop-working.png');manual_validation='Multi-monitor DPI, pointer hit testing, drag, long idle periods and visual polish remain manual.'}
 [IO.File]::WriteAllText((Join-Path $OutputDirectory 'result.json'),($result|ConvertTo-Json), (New-Object Text.UTF8Encoding($false)))
 $result|ConvertTo-Json
