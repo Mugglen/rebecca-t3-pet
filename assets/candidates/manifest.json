@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "selection_status": "awaiting-user-selection",
+  "source": "../rebecca-idle-seated.png",
+  "method": "built-in-imagegen",
+  "candidates": [
+    {
+      "id": "A",
+      "file": "A-coffee.png",
+      "name": "抱杯休息",
+      "suggested_use": "安静待机",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "026b436e5384a8b1b66cce12ebd21b0c31e6c3fc81ecfd6c8f93695819c82b78",
+      "generated_file": "exec-ded5b467-7978-433e-a93a-14ca298b3a95.png",
+      "enabled": false
+    },
+    {
+      "id": "B",
+      "file": "B-thinking.png",
+      "name": "托腮等你",
+      "suggested_use": "等待回应",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "40839567a969e9adea4a64dabeab2b41b1901e308b50be6479f16a0508b4f87c",
+      "generated_file": "exec-310efe28-4c31-41eb-8bd7-568ccc6403fd.png",
+      "enabled": false
+    },
+    {
+      "id": "C",
+      "file": "C-wave.png",
+      "name": "挥手提醒",
+      "suggested_use": "需要你处理",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "3bcab45d6f5a847c7fc67cd1c86154b0612a9aae020a569103c8812e7bd14f79",
+      "generated_file": "exec-365f2790-cdb1-40b4-8b4c-d8c216662728.png",
+      "enabled": false
+    },
+    {
+      "id": "D",
+      "file": "D-victory.png",
+      "name": "比耶庆祝",
+      "suggested_use": "任务完成",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "457d6c8db398f95450b5189ad45c64a3e46448a2bab49fada9ae1b7a8d5eb70b",
+      "generated_file": "exec-28f477ab-020e-4dbf-94a2-8cd6f35227a4.png",
+      "enabled": false
+    },
+    {
+      "id": "E",
+      "file": "E-pout.png",
+      "name": "气鼓鼓",
+      "suggested_use": "错误或重试",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "d3a91c1add14e39c8c60769637ef497df48c9124e0f84102d7dc5413f2c40f97",
+      "generated_file": "exec-de23b78a-a1a3-4578-b185-05c9487eedb6.png",
+      "enabled": false
+    },
+    {
+      "id": "F",
+      "file": "F-sleep.png",
+      "name": "抱膝打盹",
+      "suggested_use": "离线或休息",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "91d28ecb8d472a468c1adb4fb8b1c035c34f4561870943d6a29cfc95f2724e34",
+      "generated_file": "exec-b369a663-69f1-47bb-914e-845f80b581dd.png",
+      "enabled": false
+    }
+  ]
+}

@@ -22,6 +22,8 @@
 
 拖动角色调整位置，右键打开菜单；菜单支持退出，窗口响应 Esc。退出应停止该桌宠实例启动的采集器。无需关闭 T3，也不注册开机自启。
 
+工作状态默认播放 `assets/rebecca-working-typing.gif`。右键“暂停动作”可停止 GIF 并显示静态工作坐姿；离开工作状态也会停止播放。GIF 缺失、损坏或使用非完整画布增量帧时回退静态图，不影响状态监控。更换资产后需重启桌宠。
+
 采集器写状态文件时若遇到短暂占用，会保留旧文件并退避重试；超过新鲜度阈值时，界面明确显示过期。采集进程异常退出后，窗口显示重新连接，并按 2、4、8、16、30 秒重启，连续运行满 30 秒后重置退避。重启后必须收到本次启动产生的新快照才会恢复状态显示。
 
 ## 只验证采集
@@ -67,3 +69,5 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/Test-CollectorLi
 ```
 
 Windows smoke 使用合成快照验证协议、资源加载和窗口渲染；真实任务验证另外执行。CI 定义在 `.github/workflows/verify.yml`，不会访问作者机器的 T3 数据。
+
+桌面 smoke 同时调用 `Test-Animation.ps1` 验证 GIF 换帧、暂停、状态切换与清理。需要重新封装已生成的动画 sheet 时执行 `powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File scripts/Build-TypingGif.ps1 -Force`；此命令仅替换本项目 GIF，默认不覆盖已有文件时可省略 `-Force` 并指定新的 `-OutputPath`。

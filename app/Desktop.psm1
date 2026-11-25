@@ -96,6 +96,57 @@ function Read-RebeccaConfig {
     return $config
 }
 
+function Read-RebeccaGifAnimation {
+    param([string]$Path)
+    # Only independent full-canvas frames are supported. Delta GIFs need a
+    # compositor; reject those rather than showing fragments or stale pixels.
+    $stream=$null
+    try {
+        if (-not [IO.File]::Exists($Path)) { return $null }
+        $stream=[IO.File]::Open($Path,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::Read)
+        if ($stream.Length -lt 13 -or $stream.Length -gt 16777216) { return $null }
+        $header=New-Object byte[] 13
+        if ($stream.Read($header,0,13) -ne 13) { return $null }
+        $signature=[Text.Encoding]::ASCII.GetString($header,0,6)
+        if ($signature -notin @('GIF87a','GIF89a')) { return $null }
+        $width=[int]$header[6]+256*[int]$header[7]
+        $height=[int]$header[8]+256*[int]$header[9]
+        if ($width -lt 1 -or $height -lt 1 -or $width -gt 2048 -or $height -gt 2048) { return $null }
+        $stream.Position=0
+        $decoder=New-Object Windows.Media.Imaging.GifBitmapDecoder($stream,[Windows.Media.Imaging.BitmapCreateOptions]::PreservePixelFormat,[Windows.Media.Imaging.BitmapCacheOption]::OnLoad)
+        if ($decoder.Frames.Count -lt 2 -or $decoder.Frames.Count -gt 64 -or [long]$width*$height*$decoder.Frames.Count -gt 33554432) { return $null }
+        $frames=New-Object 'Collections.Generic.List[Windows.Media.Imaging.BitmapSource]'
+        $durations=New-Object 'Collections.Generic.List[int]'
+        $timeline=New-Object Windows.Media.Animation.ObjectAnimationUsingKeyFrames
+        $elapsed=0
+        foreach ($frame in $decoder.Frames) {
+            if ($frame.PixelWidth -ne $width -or $frame.PixelHeight -ne $height) { return $null }
+            $metadata=$frame.Metadata
+            $left=[int]$metadata.GetQuery('/imgdesc/Left'); $top=[int]$metadata.GetQuery('/imgdesc/Top')
+            if ($left -ne 0 -or $top -ne 0) { return $null }
+            $delay=[int]$metadata.GetQuery('/grctlext/Delay')
+            if ($delay -lt 0 -or $delay -gt 1000) { return $null }
+            # Missing/zero delays are common; normalize them to a gentle 10 fps.
+            if ($delay -lt 2) { $delay=10 }
+            $milliseconds=$delay*10
+            $frame.Freeze(); $frames.Add($frame); $durations.Add($milliseconds)
+            $keyframe=New-Object Windows.Media.Animation.DiscreteObjectKeyFrame
+            $keyframe.KeyTime=[Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::FromMilliseconds($elapsed))
+            $keyframe.Value=$frame; $timeline.KeyFrames.Add($keyframe)|Out-Null
+            $elapsed+=$milliseconds
+        }
+        $timeline.Duration=[TimeSpan]::FromMilliseconds($elapsed)
+        $timeline.RepeatBehavior=[Windows.Media.Animation.RepeatBehavior]::Forever
+        $timeline.Freeze()
+        return [pscustomobject]@{Frames=$frames.ToArray();DurationsMs=$durations.ToArray();DurationMs=$elapsed;Timeline=$timeline}
+    } catch {
+        # Animation is optional: malformed assets must not stop status display.
+        return $null
+    } finally {
+        if ($null -ne $stream) { $stream.Dispose() }
+    }
+}
+
 function New-RebeccaView {
     param([string]$Root, [hashtable]$Config, [ValidateSet('live','demo')][string]$Mode='live')
     Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
@@ -145,8 +196,11 @@ function New-RebeccaView {
         ModeLabel=$window.FindName('ModeLabel'); StateLabel=$window.FindName('StateLabel')
         Message=$window.FindName('Message'); Counts=$window.FindName('Counts')
         Frames=$frames; State=''; Snapshot=$null; Mode=$Mode; Paused=$false
+        WorkingAnimation=(Read-RebeccaGifAnimation (Join-Path $Root 'assets\rebecca-working-typing.gif'))
+        WorkingClock=$null; IsClosed=$false
         Scale=[double]$Config.scale; Config=$Config; LastPosition=$null
     }
+    $context.Window.Add_Closed({$context.IsClosed=$true;Stop-RebeccaAnimation $context}.GetNewClosure())
     $context.Window.Topmost = $Config.topmost
     if ($Mode -eq 'demo') { $context.ModeLabel.Text='演示 · 模拟状态'; $context.ModeLabel.Foreground='#FFCF75' }
     if ($Config.project_ids.Count -gt 0) { $context.ModeLabel.Text += ' · 指定项目' }
@@ -187,14 +241,31 @@ function Set-RebeccaVisual {
     Set-RebeccaAnimation $Context
 }
 
-function Set-RebeccaAnimation {
+function Stop-RebeccaAnimation {
     param($Context)
+    $Context.Character.ApplyAnimationClock([Windows.Controls.Image]::SourceProperty,$null)
+    if ($null -ne $Context.WorkingClock) {
+        $Context.WorkingClock.Controller.Remove()
+        $Context.WorkingClock=$null
+    }
     $rotation=$Context.Character.RenderTransform.Children[0]
     $translation=$Context.Character.RenderTransform.Children[1]
     $rotation.BeginAnimation([Windows.Media.RotateTransform]::AngleProperty,$null)
     $translation.BeginAnimation([Windows.Media.TranslateTransform]::YProperty,$null)
     $rotation.Angle=0; $translation.Y=0
-    if ($Context.Paused -or $Context.State -in @('offline','incompatible','stopped')) { return }
+}
+
+function Set-RebeccaAnimation {
+    param($Context)
+    Stop-RebeccaAnimation $Context
+    if ($Context.IsClosed -or $Context.Paused -or $Context.State -in @('offline','incompatible','stopped')) { return }
+    if ($Context.State -eq 'working' -and $null -ne $Context.WorkingAnimation) {
+        $Context.WorkingClock=$Context.WorkingAnimation.Timeline.CreateClock($true)
+        $Context.Character.ApplyAnimationClock([Windows.Controls.Image]::SourceProperty,$Context.WorkingClock)
+        $Context.WorkingClock.Controller.Begin()
+        return
+    }
+    $translation=$Context.Character.RenderTransform.Children[1]
     $amplitude=3.0; $seconds=1.8
     if ($Context.State -eq 'working') { $amplitude=2.0; $seconds=0.7 }
     if ($Context.State -eq 'success') { $amplitude=8.0; $seconds=0.45 }

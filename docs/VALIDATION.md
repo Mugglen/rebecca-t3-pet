@@ -32,6 +32,14 @@
 - **真实自动重启**：10:59 仅终止本桌宠持有的采集启动器；窗口进程保持存活，生命周期日志记录退出码与新的启动，旧实际 Python 进程已退出，新快照再次为 live/connected/working，运行任务数 1。摘要在 `tmp/live-recovery-result.json`。未终止或修改 T3 服务。
 - 窗口操作工具未列出该隐藏 WPF 桌宠，最终验证依据为进程、新快照和生命周期日志；不将它表述为界面目视验收。物理睡眠/唤醒与长时间运行仍待验收。
 
+## 工作 GIF 与候选形象（同日追加）
+
+- 内置 imagegen 生成六帧工作 sheet 和六张候选 PNG；候选均为 1254×1254，四角抽查 alpha=0，SHA 与 `assets/candidates/manifest.json` 一致。候选尚未选定，未修改默认状态映射。
+- 生产 GIF 为 512×512、6 帧，每帧 140ms、总循环 840ms。打包代理逐帧核对生产与合成素材的透明遮罩，均与原 PNG alpha≥128 相同；主代理独立重建 GIF，与交付文件 SHA 完全一致。详见 `assets/GENERATION.md`。
+- 主代理复跑 **28 项桌面检查 + 27 项动画检查** 全部通过，输出 `tmp/desktop-smoke-20261125-071908/`。检查包含正常 WPF Dispatcher 推进、像素换帧/循环、重复状态轮询不断播、暂停/切换/关闭清理和坏资源回退。
+- 候选图库预览在 728px 宽显示完整，console 错误为空；静态 PNG 和 GIF 均已目视检查。图库只标记选择，不自动改桌宠状态。
+- 15:22 重启本机桌宠，新进程存活并持续读到 live/connected/working，启动 stderr 为空。此项基于进程与快照；动画播放的直接证据来自 WPF 测试和 GIF 预览，不声称对隐藏桌宠窗口完成原生 UI 自动化验收。
+
 ## 待验收与已知边界
 
 - secret/link 卡片及部分 T3 shell 派生等待语义尚未完整适配，见 [#11](https://github.com/Mugglen/rebecca-t3-pet/issues/11)。

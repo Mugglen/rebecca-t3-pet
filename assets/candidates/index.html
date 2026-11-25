@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>瑞贝卡候选姿势</title>
+<style>
+:root{--background:#111820;--foreground:#edf6f4;--muted-foreground:#a8b8bb;--card:#1b2832;--secondary:#263844;--border:#384b57;--primary:#8ce2c1;--radius:14px;--font-sans:system-ui,"Microsoft YaHei UI",sans-serif}
+*{box-sizing:border-box}body{margin:0;font-family:var(--font-sans);color:var(--foreground)}button{font:inherit;cursor:pointer;color:var(--foreground);border:1px solid var(--border);border-radius:9px;background:var(--secondary);padding:7px 11px}button:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.work{display:grid;grid-template-columns:minmax(150px,240px) 1fr;gap:18px;align-items:center;padding:16px;background:var(--card);border-radius:var(--radius)}
+.work img{width:100%;height:220px;object-fit:contain}.work h2{font-size:20px;margin:0 0 10px}.work p{font-size:14px;line-height:1.7;color:var(--muted-foreground)}
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:16px 0;font-size:14px}.controls span{color:var(--muted-foreground)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.pose{padding:0;overflow:hidden;background:var(--card);border:2px solid var(--border);border-radius:var(--radius);text-align:left}.pose[aria-pressed="true"]{border-color:var(--primary)}.thumb{height:190px;background:var(--secondary)}.thumb img{width:100%;height:100%;object-fit:contain;display:block}.light .thumb,.light .work-visual{background:var(--foreground)}.label{display:block;padding:12px 13px;font-weight:600;font-size:15px}.hint{display:block;padding:0 13px 12px;color:var(--muted-foreground);font-size:12px}.selected{margin:16px 0 4px;font-size:14px;line-height:1.7}.subtle{color:var(--muted-foreground);font-size:12px;margin:0 0 10px}
+@media(max-width:520px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.thumb{height:175px}.work{grid-template-columns:145px 1fr;gap:10px}.work img{height:175px}.work h2{font-size:17px}}
+</style></head><body>
+<img id="still" src="../rebecca-working-seated.png" alt="" hidden><section class="work"><div class="work-visual"><img id="typing" src="../rebecca-working-typing.gif" alt="瑞贝卡坐着交替敲键盘的循环动画"></div><div><h2>工作中 · 敲键盘</h2><p>双手交替轻敲键盘<br>6 帧 · 0.84 秒循环</p><button id="pause" type="button">暂停预览</button></div></section>
+<div class="controls"><button id="background" type="button">切换浅色背景</button><span>点选喜欢的候选，再回复编号即可。</span></div>
+<div class="grid">
+<button class="pose" type="button" data-id="A" aria-pressed="false"><div class="thumb"><img src="A-coffee.png" alt="A 抱杯休息"></div><span class="label">A · 抱杯休息</span><span class="hint">适合安静待机</span></button>
+<button class="pose" type="button" data-id="B" aria-pressed="false"><div class="thumb"><img src="B-thinking.png" alt="B 托腮等你"></div><span class="label">B · 托腮等你</span><span class="hint">适合等待回应</span></button>
+<button class="pose" type="button" data-id="C" aria-pressed="false"><div class="thumb"><img src="C-wave.png" alt="C 挥手提醒"></div><span class="label">C · 挥手提醒</span><span class="hint">适合需要你处理</span></button>
+<button class="pose" type="button" data-id="D" aria-pressed="false"><div class="thumb"><img src="D-victory.png" alt="D 比耶庆祝"></div><span class="label">D · 比耶庆祝</span><span class="hint">适合完成任务</span></button>
+<button class="pose" type="button" data-id="E" aria-pressed="false"><div class="thumb"><img src="E-pout.png" alt="E 气鼓鼓"></div><span class="label">E · 气鼓鼓</span><span class="hint">适合错误或重试</span></button>
+<button class="pose" type="button" data-id="F" aria-pressed="false"><div class="thumb"><img src="F-sleep.png" alt="F 抱膝打盹"></div><span class="label">F · 抱膝打盹</span><span class="hint">适合离线或休息</span></button>
+</div>
+<p class="selected" id="selection" aria-live="polite">尚未选中候选。</p><p class="subtle">勾选仅用于预览，不会自动修改桌宠配置。</p>
+<script>
+const selected=new Set();document.querySelectorAll('.pose').forEach(button=>button.addEventListener('click',()=>{const id=button.dataset.id;if(selected.has(id))selected.delete(id);else selected.add(id);button.setAttribute('aria-pressed',selected.has(id));document.getElementById('selection').textContent=selected.size?'已选：'+[...selected].sort().join('、')+'。把这些编号发给我即可。':'尚未选中候选。'}));
+document.getElementById('background').addEventListener('click',event=>{const on=document.body.classList.toggle('light');event.target.textContent=on?'切换深色背景':'切换浅色背景';});
+let paused=false;const typing=document.getElementById('typing'),animatedSource=typing.src;document.getElementById('pause').addEventListener('click',event=>{paused=!paused;typing.src=paused?document.getElementById('still').src:animatedSource;event.target.textContent=paused?'播放动画':'暂停预览';});
+</script></body></html>
