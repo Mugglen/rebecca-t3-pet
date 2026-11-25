@@ -113,6 +113,14 @@ function New-RebeccaView {
         $rectangle = New-Object Windows.Int32Rect($cellX, $cellY, $cellW, $cellH)
         $crop = New-Object Windows.Media.Imaging.CroppedBitmap($bitmap, $rectangle); $crop.Freeze(); $frames[$states[$i]] = $crop
     }
+    foreach ($pose in @('idle','working')) {
+        $posePath = Join-Path $Root ('assets\rebecca-'+$pose+'-seated.png')
+        if (-not [IO.File]::Exists($posePath)) { throw ('Character asset is missing: assets/rebecca-'+$pose+'-seated.png') }
+        $seated = New-Object Windows.Media.Imaging.BitmapImage
+        $seated.BeginInit(); $seated.CacheOption = [Windows.Media.Imaging.BitmapCacheOption]::OnLoad
+        $seated.UriSource = New-Object Uri($posePath); $seated.EndInit(); $seated.Freeze()
+        $frames[$pose] = $seated
+    }
     [xml]$xaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Rebecca · T3 Pet" WindowStyle="None" AllowsTransparency="True" Background="Transparent" ResizeMode="NoResize" ShowInTaskbar="False" ShowActivated="False" Width="320" Height="385" Topmost="True">
   <Grid>
