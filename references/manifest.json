@@ -76,7 +76,9 @@
       "height": 800,
       "format": "PNG",
       "sha256": "285f69a7df00a51307b8dbac0a979b2ede8bc5a1ea433e2f5df7ca69f0e37009",
-      "size_bytes": 143869
+      "size_bytes": 143869,
+      "caption": "原作角色立绘：宽外套、双马尾、配色",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-nendoroid-01",
@@ -94,7 +96,9 @@
       "height": 700,
       "format": "JPEG",
       "sha256": "0632afaf10a57b68dfd7b06e2e71a167353767e3e5796633af40e83cbb625dca",
-      "size_bytes": 85651
+      "size_bytes": 85651,
+      "caption": "Q 版全身：笑脸、双手举起",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-nendoroid-02",
@@ -112,7 +116,9 @@
       "height": 800,
       "format": "JPEG",
       "sha256": "8a85ac9da43f6c95d16251da67e018c167de316871c5dd793315435fefe1a629",
-      "size_bytes": 77145
+      "size_bytes": 77145,
+      "caption": "Q 版动作：单手指向前方、张嘴",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-nendoroid-03",
@@ -130,7 +136,9 @@
       "height": 800,
       "format": "JPEG",
       "sha256": "33716e21f818eb5081c145292aa425203ec052ed3300a2f4a567b4172bd15a3e",
-      "size_bytes": 68944
+      "size_bytes": 68944,
+      "caption": "Q 版怒脸：眉眼与双手动作",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-nendoroid-04",
@@ -148,7 +156,9 @@
       "height": 800,
       "format": "JPEG",
       "sha256": "c100fa84abf89e155f4027d39dd64d781e6a7e74ede698959b23bbe36ed1953c",
-      "size_bytes": 72032
+      "size_bytes": 72032,
+      "caption": "Q 版得意笑：双拳庆祝",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-nendoroid-05",
@@ -166,7 +176,9 @@
       "height": 600,
       "format": "JPEG",
       "sha256": "3d8191a95fe059f4a2eb88dbe57fe98e0d696fc35ee3d5957da7df21c5611d0f",
-      "size_bytes": 78855
+      "size_bytes": 78855,
+      "caption": "Q 版互动：与 David 并排",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-hello-01",
@@ -184,7 +196,9 @@
       "height": 1000,
       "format": "JPEG",
       "sha256": "7c7dcaaf3e7275cf7d8b5eb3efc473cf66bfbdc72d5c311ab44c33ff48ca7122",
-      "size_bytes": 64032
+      "size_bytes": 64032,
+      "caption": "极简 Q 版：正面比例与大色块",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-hello-02",
@@ -202,7 +216,9 @@
       "height": 1000,
       "format": "JPEG",
       "sha256": "77b28616cba83e51932e6ecb122945241916c49f8c7d7e91e3511d247fc8f088",
-      "size_bytes": 62054
+      "size_bytes": 62054,
+      "caption": "极简 Q 版：偏转头部与马尾体积",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-hello-03",
@@ -220,7 +236,9 @@
       "height": 1000,
       "format": "JPEG",
       "sha256": "1665fbea065bf26ff198f7d03427d7a2c0289f9a20a8dbab2808036c00a7d604",
-      "size_bytes": 63210
+      "size_bytes": 63210,
+      "caption": "极简 Q 版：另一侧头部视角",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-popup-01",
@@ -238,7 +256,9 @@
       "height": 800,
       "format": "JPEG",
       "sha256": "7f518ee488e5d07c0171cfeff6a0a09dadacf0315e097e1c15950bde64a1b915",
-      "size_bytes": 72269
+      "size_bytes": 72269,
+      "caption": "举手半身：肩袖体积与气质",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-popup-02",
@@ -256,7 +276,9 @@
       "height": 800,
       "format": "JPEG",
       "sha256": "9182747364e1a0b21de41e8e0249ff2a0a11e012dd639254cb9c5118bbc3bf81",
-      "size_bytes": 86897
+      "size_bytes": 86897,
+      "caption": "举手全身：服装、站姿与鞋",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-popup-03",
@@ -274,7 +296,9 @@
       "height": 800,
       "format": "JPEG",
       "sha256": "d57a4bc45d78924ed044453c50cb2b7997a6bf339c79b4c2d54b36806d8ce902",
-      "size_bytes": 74208
+      "size_bytes": 74208,
+      "caption": "举手偏侧视角：面部与发束",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-popup-04",
@@ -292,7 +316,9 @@
       "height": 800,
       "format": "JPEG",
       "sha256": "28b6c810c100c68e9b90ac78f3e9b28eff331afb858eeebce1b60211b1eee136",
-      "size_bytes": 112684
+      "size_bytes": 112684,
+      "caption": "与 David、Lucy 的组合展示",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-popup-05",
@@ -310,7 +336,9 @@
       "height": 800,
       "format": "JPEG",
       "sha256": "a8507fe78c1cf67995ca76dcc37192930e3ff810466db970e42fb7e15db719ec",
-      "size_bytes": 57224
+      "size_bytes": 57224,
+      "caption": "单色背景全身：外套轮廓",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-popup-06",
@@ -328,7 +356,9 @@
       "height": 800,
       "format": "JPEG",
       "sha256": "9fcfff975832754c69b9b74bf65a9d28b80badf4ec66dd5ebf09dd21e38c2da6",
-      "size_bytes": 56786
+      "size_bytes": 56786,
+      "caption": "背面：发束、外套后片与鞋",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-popup-07",
@@ -346,7 +376,9 @@
       "height": 820,
       "format": "JPEG",
       "sha256": "b1c15bb244bc5cea73a5f96172b1a26a3185c4c9c25e5e21129c945e45102e66",
-      "size_bytes": 73591
+      "size_bytes": 73591,
+      "caption": "近景：面部与肩颈细节",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-buzzmod-01",
@@ -364,7 +396,9 @@
       "height": 1100,
       "format": "JPEG",
       "sha256": "13e3da45efe3a484face3de2baf1e73cd03a48feb7d1c9417ce43e8d80afa2d8",
-      "size_bytes": 72451
+      "size_bytes": 72451,
+      "caption": "持物站姿：重心和宽袖",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-buzzmod-02",
@@ -382,7 +416,9 @@
       "height": 1100,
       "format": "JPEG",
       "sha256": "df3fa3080534e8fe9462c8b9daafdd641936f11eb9d199153303344e63e8a4cb",
-      "size_bytes": 73504
+      "size_bytes": 73504,
+      "caption": "正面放松站姿",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-buzzmod-03",
@@ -400,7 +436,9 @@
       "height": 1100,
       "format": "JPEG",
       "sha256": "e1853e6cae29d69f9b94da9db18915580325c2939beb4674312194930f8258fa",
-      "size_bytes": 66452
+      "size_bytes": 66452,
+      "caption": "背面：发尾层次与服装结构",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-buzzmod-04",
@@ -418,7 +456,9 @@
       "height": 1100,
       "format": "JPEG",
       "sha256": "ba70f401f994d6b98702458aac8685c337321f27a92f9b2c2da875ab02d708ad",
-      "size_bytes": 71421
+      "size_bytes": 71421,
+      "caption": "侧身站姿：鞋与膝部角度",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-buzzmod-05",
@@ -436,7 +476,9 @@
       "height": 1100,
       "format": "JPEG",
       "sha256": "bd1c90757cff933b37d15aad12ccc2e29d7bcf0355e4dc887b598b2a51295800",
-      "size_bytes": 67937
+      "size_bytes": 67937,
+      "caption": "双臂向前的动态姿态",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-buzzmod-06",
@@ -454,7 +496,9 @@
       "height": 1000,
       "format": "JPEG",
       "sha256": "83a0c0c3c2f671e11845eee02c1a0bd0ea83b1c8e5e405b58a9651e51052a93b",
-      "size_bytes": 75781
+      "size_bytes": 75781,
+      "caption": "跳跃：发束和衣服动态",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-buzzmod-07",
@@ -472,7 +516,9 @@
       "height": 1100,
       "format": "JPEG",
       "sha256": "1222754e9af0eb6979388dd7094b9c93ec704f79080e774c5bfc5f7ca36db3d0",
-      "size_bytes": 66402
+      "size_bytes": 66402,
+      "caption": "单手举物、抬腿动作",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-buzzmod-08",
@@ -490,7 +536,9 @@
       "height": 750,
       "format": "JPEG",
       "sha256": "0e67f6b29c887a2498a989c814f1fa87e0a8f69b1b51424f37b91de9192851b6",
-      "size_bytes": 119594
+      "size_bytes": 119594,
+      "caption": "与 Lucy 的站姿组合",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-buzzmod-09",
@@ -508,7 +556,9 @@
       "height": 898,
       "format": "JPEG",
       "sha256": "ead3fe212f7d1ce3c541cd2e6cf0d9d0cc970df8b91edf9b34d4aeb8528df9f7",
-      "size_bytes": 90142
+      "size_bytes": 90142,
+      "caption": "放松坐姿：适合待机动作研究",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-buzzmod-10",
@@ -526,7 +576,9 @@
       "height": 1125,
       "format": "JPEG",
       "sha256": "0942dfd1c2964a95b117bb4b1ef563c907bcbe568226184fbc3e696acfc8ab29",
-      "size_bytes": 79914
+      "size_bytes": 79914,
+      "caption": "斜俯视全身与外套体积",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-plush-01",
@@ -544,7 +596,9 @@
       "height": 800,
       "format": "JPEG",
       "sha256": "5ea8249d05e478de1133dcce914209b09857904f4bfbb1bb1b5caf343237aa6a",
-      "size_bytes": 90516
+      "size_bytes": 90516,
+      "caption": "布偶坐姿：小尺寸识别",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-plush-02",
@@ -562,7 +616,9 @@
       "height": 700,
       "format": "JPEG",
       "sha256": "be71becb258a7a3bb367793702e6bb910fa3aa2e6d2adb66160833871846e012",
-      "size_bytes": 103040
+      "size_bytes": 103040,
+      "caption": "布偶正面：符号和表情简化",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-plush-03",
@@ -580,7 +636,9 @@
       "height": 700,
       "format": "JPEG",
       "sha256": "c921197905b8cfbd72fb3ffff37e2a6f9268313802b29d4941149d6094fcb9b3",
-      "size_bytes": 65519
+      "size_bytes": 65519,
+      "caption": "布偶侧面：发饰与轮廓",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-plush-04",
@@ -598,7 +656,9 @@
       "height": 700,
       "format": "JPEG",
       "sha256": "83fa38786df68e5aeda6714a5bbee985e4c87261b5957321769af8112455598a",
-      "size_bytes": 88394
+      "size_bytes": 88394,
+      "caption": "布偶背面：双马尾结构",
+      "reference_role": "visual-reference"
     },
     {
       "id": "gsc-plush-05",
@@ -616,7 +676,9 @@
       "height": 700,
       "format": "JPEG",
       "sha256": "b72660a67bbefe42973dc29d0b35440fee9f4fec4a777fbc420deb1652235869",
-      "size_bytes": 90438
+      "size_bytes": 90438,
+      "caption": "布偶纹样：图案简化参考",
+      "reference_role": "visual-reference"
     },
     {
       "id": "cdpr-cosplay-01",
@@ -641,7 +703,9 @@
       "format": "PNG",
       "sha256": "77219de278ed48cfbc1b55ae88ec5a5de578347c77537b7530362009a5e4b431",
       "size_bytes": 4177761,
-      "reuse_license": "Not established; local visual research only. Not a runtime asset."
+      "reuse_license": "Not established; local visual research only. Not a runtime asset.",
+      "caption": "官方指南封面：强化机械手",
+      "reference_role": "visual-reference"
     },
     {
       "id": "cdpr-cosplay-02",
@@ -666,7 +730,9 @@
       "format": "PNG",
       "sha256": "f94e1b190bfa8539b1b47b53232229e0da97f3b61947abc7411aca44e120fed2",
       "size_bytes": 1784745,
-      "reuse_license": "Not established; local visual research only. Not a runtime asset."
+      "reuse_license": "Not established; local visual research only. Not a runtime asset.",
+      "caption": "官方角色档案页",
+      "reference_role": "visual-reference"
     },
     {
       "id": "cdpr-cosplay-03",
@@ -691,7 +757,9 @@
       "format": "PNG",
       "sha256": "3e215784b5905c718da445c90481c5f553f222394ade9875dc5578cd4de09fd5",
       "size_bytes": 1080651,
-      "reuse_license": "Not established; local visual research only. Not a runtime asset."
+      "reuse_license": "Not established; local visual research only. Not a runtime asset.",
+      "caption": "官方全身造型页",
+      "reference_role": "visual-reference"
     },
     {
       "id": "cdpr-cosplay-04",
@@ -716,7 +784,9 @@
       "format": "PNG",
       "sha256": "3fe8f026621a82abb9b9b3328a78da3ef55ffafc6930594a90bb2018a24c2635",
       "size_bytes": 3218973,
-      "reuse_license": "Not established; local visual research only. Not a runtime asset."
+      "reuse_license": "Not established; local visual research only. Not a runtime asset.",
+      "caption": "官方头部：正面与侧面",
+      "reference_role": "visual-reference"
     },
     {
       "id": "cdpr-cosplay-05",
@@ -741,7 +811,9 @@
       "format": "PNG",
       "sha256": "58bc5d0814dc811c3730e697a7e558088daae90d68df6845807c4436c9115f06",
       "size_bytes": 1762493,
-      "reuse_license": "Not established; local visual research only. Not a runtime asset."
+      "reuse_license": "Not established; local visual research only. Not a runtime asset.",
+      "caption": "官方无外套造型：内部服装与纹样位置",
+      "reference_role": "visual-reference"
     },
     {
       "id": "cdpr-cosplay-06",
@@ -766,7 +838,9 @@
       "format": "PNG",
       "sha256": "bc91955f8e88b514952521cc9ab5efd0ed4a23158cc060f4db9c7dff4be5fb3a",
       "size_bytes": 511669,
-      "reuse_license": "Not established; local visual research only. Not a runtime asset."
+      "reuse_license": "Not established; local visual research only. Not a runtime asset.",
+      "caption": "官方纹样图形细节",
+      "reference_role": "visual-reference"
     },
     {
       "id": "cdpr-cosplay-07",
@@ -791,7 +865,9 @@
       "format": "PNG",
       "sha256": "d268dd65443d16af326074817759539f72b2a3a15bad59f514a0ca8b67878d76",
       "size_bytes": 1498779,
-      "reuse_license": "Not established; local visual research only. Not a runtime asset."
+      "reuse_license": "Not established; local visual research only. Not a runtime asset.",
+      "caption": "官方粉蓝机械手与多色眼睛细节",
+      "reference_role": "visual-reference"
     },
     {
       "id": "cdpr-cosplay-08",
@@ -816,7 +892,9 @@
       "format": "PNG",
       "sha256": "dd8a26e239ef668790570df25e8f0ab0325d9a2e888977492caee673d937ed44",
       "size_bytes": 5166518,
-      "reuse_license": "Not established; local visual research only. Not a runtime asset."
+      "reuse_license": "Not established; local visual research only. Not a runtime asset.",
+      "caption": "指南附页：Fan Content Guidelines（非角色参考图）",
+      "reference_role": "source-document-page"
     },
     {
       "id": "cdpr-cosplay-09",
@@ -841,7 +919,9 @@
       "format": "PNG",
       "sha256": "a3c34c4945d1e9dd68e1164025acff04570f9fb2fcbff2babedf8b970de0ece4",
       "size_bytes": 75572,
-      "reuse_license": "Not established; local visual research only. Not a runtime asset."
+      "reuse_license": "Not established; local visual research only. Not a runtime asset.",
+      "caption": "指南附页：署名（非角色参考图）",
+      "reference_role": "source-document-page"
     }
   ],
   "notes": "Public official references collected for local design research. Raw images, PDFs and generated thumbnails are not project runtime assets and are excluded from Git.",
@@ -869,5 +949,11 @@
       "reason": "120-second timeout after 7,425,468 bytes; complete 23,508,705-byte file retrieved through existing local proxy.",
       "recovered": true
     }
-  ]
+  ],
+  "summary": {
+    "image_files": 40,
+    "visual_references": 38,
+    "document_pages": 2,
+    "unique_image_hashes": 40
+  }
 }

@@ -14,6 +14,7 @@
 | [#8](https://github.com/Mugglen/rebecca-t3-pet/issues/8) | M1 | 自动测试、CI 与真实状态验证报告 | #4、#6、#7 |
 | [#9](https://github.com/Mugglen/rebecca-t3-pet/issues/9) | M2 | 完成多屏、DPI、点击命中与资源占用验收 | #8 |
 | [#10](https://github.com/Mugglen/rebecca-t3-pet/issues/10) | M3 | 便携发布包、安装与升级故障文档 | #9、#5 M2 |
+| [#11](https://github.com/Mugglen/rebecca-t3-pet/issues/11) | M2 | 补齐 secret/link 卡片与特殊等待语义 | #3、#4、#8 |
 
 ## 交付顺序
 

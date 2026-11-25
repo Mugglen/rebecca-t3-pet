@@ -47,8 +47,9 @@
 
 1. 使用项目允许的 Python，在 D 盘安装 `Pillow` 与 `PyMuPDF`（本轮分别为 13.0.0 与 2.1）。本轮工具位于 `references/.tools`，缓存与临时文件也在本目录下的隐藏目录。
 2. `collect_sources.py` 收集官方网页；加 `--download` 下载匹配该角色的图片并生成清单。
-3. `build_gallery.py` 为已有参考图与指南页生成缩略图、校验数据和图库。
-4. 指南页使用 PyMuPDF 按 1.2 倍页面尺度渲染，未裁切或改变角色内容。
+3. `collect_sources.py --guide` 下载官方 PDF 并逐页渲染；网络需要代理时可设置 `REFERENCE_PROXY` 为本机已有 HTTP 代理地址。
+4. `build_gallery.py` 为已有参考图与指南页生成缩略图、校验数据和图库。
+5. 指南页使用 PyMuPDF 按 1.2 倍页面尺度渲染，未裁切或改变角色内容。
 
 已用图像查看工具检查原作立绘、Nendoroid 笑脸／怒脸／双拳、官方头部及手眼细节、BUZZmod 坐姿，并检查包含全部 40 图的联系表。全部 PNG/JPEG 能解码。
 
