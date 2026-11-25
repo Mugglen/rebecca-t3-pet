@@ -147,9 +147,88 @@ function Read-RebeccaGifAnimation {
     }
 }
 
+function Initialize-RebeccaWindowLayerNative {
+    param([string]$Root)
+    if ('RebeccaPet.WindowLayerNative' -as [type]) { return }
+    # Add-Type invokes the C# compiler on Windows PowerShell 5.1. Keep its
+    # scratch files on D:, including when New-RebeccaView is called directly.
+    $temporary=Join-Path (Assert-RebeccaOutputRoot $Root) 'tmp'
+    [IO.Directory]::CreateDirectory($temporary)|Out-Null
+    $previousTemp=$env:TEMP; $previousTmp=$env:TMP
+    try {
+        $env:TEMP=$temporary; $env:TMP=$temporary
+        Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+namespace RebeccaPet {
+    public static class WindowLayerNative {
+        [DllImport("user32.dll", ExactSpelling=true, SetLastError=true)]
+        public static extern int GetWindowLongW(IntPtr hWnd, int index);
+        [DllImport("user32.dll", ExactSpelling=true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsWindow(IntPtr hWnd);
+        [DllImport("user32.dll", ExactSpelling=true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsWindowVisible(IntPtr hWnd);
+        [DllImport("user32.dll", ExactSpelling=true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsIconic(IntPtr hWnd);
+        [DllImport("user32.dll", ExactSpelling=true, SetLastError=true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr insertAfter,
+            int x, int y, int cx, int cy, uint flags);
+    }
+}
+'@ -ErrorAction Stop
+    } finally {
+        $env:TEMP=$previousTemp; $env:TMP=$previousTmp
+    }
+}
+
+function Set-RebeccaTopmost {
+    param($Context, [bool]$Enabled)
+    # Keep the user's choice separate from a window flag another process can
+    # change. A native demotion must not become the saved preference.
+    $Context.TopmostRequested=$Enabled
+    if ($Context.IsClosed) { return }
+    $Context.Window.Topmost=$Enabled
+    if ($Enabled) {
+        Restore-RebeccaTopmost $Context | Out-Null
+    } else {
+        $handle=(New-Object Windows.Interop.WindowInteropHelper($Context.Window)).Handle
+        if ($handle -ne [IntPtr]::Zero -and [RebeccaPet.WindowLayerNative]::IsWindow($handle) -and
+            ([RebeccaPet.WindowLayerNative]::GetWindowLongW($handle,-20) -band 0x8) -ne 0) {
+            # HWND_NOTOPMOST; do not activate, show, move or resize the window.
+            [RebeccaPet.WindowLayerNative]::SetWindowPos($handle,[IntPtr](-2),0,0,0,0,0x213)|Out-Null
+        }
+    }
+}
+
+function Restore-RebeccaTopmost {
+    param($Context)
+    if (-not $Context.TopmostRequested -or $Context.IsClosed -or -not $Context.Window.IsVisible -or
+        $Context.Window.WindowState -eq [Windows.WindowState]::Minimized) { return $false }
+    $handle=(New-Object Windows.Interop.WindowInteropHelper($Context.Window)).Handle
+    if ($handle -eq [IntPtr]::Zero -or -not [RebeccaPet.WindowLayerNative]::IsWindow($handle) -or
+        -not [RebeccaPet.WindowLayerNative]::IsWindowVisible($handle) -or
+        [RebeccaPet.WindowLayerNative]::IsIconic($handle)) { return $false }
+    if (([RebeccaPet.WindowLayerNative]::GetWindowLongW($handle,-20) -band 0x8) -ne 0) { return $false }
+
+    # Only repair a lost WS_EX_TOPMOST bit. Existing topmost windows keep their
+    # relative order; this is not a periodic "bring to front" operation.
+    if (-not $Context.Window.Topmost) { $Context.Window.Topmost=$true }
+    if (([RebeccaPet.WindowLayerNative]::GetWindowLongW($handle,-20) -band 0x8) -eq 0) {
+        # HWND_TOPMOST with SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE |
+        # SWP_NOOWNERZORDER. Never force a hidden/minimized window to reappear.
+        if (-not [RebeccaPet.WindowLayerNative]::SetWindowPos($handle,[IntPtr](-1),0,0,0,0,0x213)) { return $false }
+    }
+    return (([RebeccaPet.WindowLayerNative]::GetWindowLongW($handle,-20) -band 0x8) -ne 0)
+}
+
 function New-RebeccaView {
     param([string]$Root, [hashtable]$Config, [ValidateSet('live','demo')][string]$Mode='live')
     Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
+    Initialize-RebeccaWindowLayerNative $Root
     $atlasPath = Join-Path $Root 'assets\rebecca-atlas.png'
     if (-not [IO.File]::Exists($atlasPath)) { throw 'Character asset is missing: assets/rebecca-atlas.png' }
     $bitmap = New-Object Windows.Media.Imaging.BitmapImage
@@ -197,11 +276,11 @@ function New-RebeccaView {
         Message=$window.FindName('Message'); Counts=$window.FindName('Counts')
         Frames=$frames; State=''; Snapshot=$null; Mode=$Mode; Paused=$false
         WorkingAnimation=(Read-RebeccaGifAnimation (Join-Path $Root 'assets\rebecca-working-typing.gif'))
-        WorkingClock=$null; IsClosed=$false
+        WorkingClock=$null; IsClosed=$false; TopmostRequested=[bool]$Config.topmost
         Scale=[double]$Config.scale; Config=$Config; LastPosition=$null
     }
     $context.Window.Add_Closed({$context.IsClosed=$true;Stop-RebeccaAnimation $context}.GetNewClosure())
-    $context.Window.Topmost = $Config.topmost
+    Set-RebeccaTopmost $context $Config.topmost
     if ($Mode -eq 'demo') { $context.ModeLabel.Text='演示 · 模拟状态'; $context.ModeLabel.Foreground='#FFCF75' }
     if ($Config.project_ids.Count -gt 0) { $context.ModeLabel.Text += ' · 指定项目' }
     Set-RebeccaSize $context $context.Scale
@@ -279,7 +358,7 @@ function Set-RebeccaAnimation {
 
 function Save-RebeccaViewState {
     param($Context, [string]$Path)
-    $settings=@{left=$Context.Window.Left;top=$Context.Window.Top;scale=$Context.Scale;paused=$Context.Paused;topmost=$Context.Window.Topmost}
+    $settings=@{left=$Context.Window.Left;top=$Context.Window.Top;scale=$Context.Scale;paused=$Context.Paused;topmost=$Context.TopmostRequested}
     [IO.File]::WriteAllText($Path, ($settings|ConvertTo-Json -Compress), (New-Object Text.UTF8Encoding($false)))
 }
 
@@ -293,7 +372,7 @@ function Restore-RebeccaViewState {
         $left=[double]$settings.left; $top=[double]$settings.top
         if ([double]::IsNaN($left) -or [double]::IsInfinity($left) -or [double]::IsNaN($top) -or [double]::IsInfinity($top)) { return }
         Set-RebeccaSize $Context ([double]$settings.scale)
-        $Context.Paused=$settings.paused; $Context.Window.Topmost=$settings.topmost
+        $Context.Paused=$settings.paused; Set-RebeccaTopmost $Context $settings.topmost
         # SystemParameters are WPF DIPs; never mix these with WinForms physical pixels.
         $virtual=New-Object Windows.Rect([Windows.SystemParameters]::VirtualScreenLeft,[Windows.SystemParameters]::VirtualScreenTop,[Windows.SystemParameters]::VirtualScreenWidth,[Windows.SystemParameters]::VirtualScreenHeight)
         $candidate=New-Object Windows.Rect($left,$top,$Context.Window.Width,$Context.Window.Height)

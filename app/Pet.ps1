@@ -34,8 +34,8 @@ try {
     $details.Add_Click({ $snapshot=$context.Snapshot; $text=('{0}`n来源：{1}  {2}`n模式：{3}' -f $snapshot.message,$snapshot.source.kind,$snapshot.source.version,$snapshot.mode).Replace('`n',[Environment]::NewLine); [Windows.MessageBox]::Show($context.Window,$text,'Rebecca · T3 Pet')|Out-Null }.GetNewClosure())
     $pause=New-Object Windows.Controls.MenuItem; $pause.Header='暂停动作'; $pause.IsCheckable=$true; $pause.IsChecked=$context.Paused
     $pause.Add_Click({$context.Paused=$pause.IsChecked; Set-RebeccaAnimation $context}.GetNewClosure())
-    $topmost=New-Object Windows.Controls.MenuItem; $topmost.Header='始终置顶'; $topmost.IsCheckable=$true; $topmost.IsChecked=$context.Window.Topmost
-    $topmost.Add_Click({$context.Window.Topmost=$topmost.IsChecked}.GetNewClosure())
+    $topmost=New-Object Windows.Controls.MenuItem; $topmost.Header='始终置顶'; $topmost.IsCheckable=$true; $topmost.IsChecked=$context.TopmostRequested
+    $topmost.Add_Click({Set-RebeccaTopmost $context ([bool]$topmost.IsChecked)}.GetNewClosure())
     $larger=New-Object Windows.Controls.MenuItem; $larger.Header='放大'; $larger.Add_Click({Set-RebeccaSize $context ($context.Scale+0.1)}.GetNewClosure())
     $smaller=New-Object Windows.Controls.MenuItem; $smaller.Header='缩小'; $smaller.Add_Click({Set-RebeccaSize $context ($context.Scale-0.1)}.GetNewClosure())
     $reset=New-Object Windows.Controls.MenuItem; $reset.Header='回到主屏'; $reset.Add_Click({Reset-RebeccaPosition $context}.GetNewClosure())
@@ -60,6 +60,7 @@ try {
     $started=[DateTime]::UtcNow
     $timer.Add_Tick({
         if($AutoCloseSeconds -gt 0 -and ([DateTime]::UtcNow-$started).TotalSeconds -ge $AutoCloseSeconds){$context.Window.Close();return}
+        Restore-RebeccaTopmost $context | Out-Null
         if($SmokeTest){if(([DateTime]::UtcNow-$started).TotalSeconds -ge $SmokeSeconds){$context.Window.Close()};return}
         Update-RebeccaCollectorSupervisor $collector
         if($null -eq $collector.Process){Set-RebeccaVisual $context (New-RebeccaUnavailable $Mode $collector.Message);return}

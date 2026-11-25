@@ -68,6 +68,7 @@ try{
     Assert-Test ([IO.File]::Exists($settingsPath)) 'View preferences not saved.'
 }finally{$view.Window.Close()}
 $animationResult=& (Join-Path $PSScriptRoot 'Test-Animation.ps1') -OutputDirectory (Join-Path $OutputDirectory 'animation') -PassThru
-$result=[ordered]@{checks=$script:checks;animation_checks=$animationResult.checks;result='passed';mode='synthetic';render=(Join-Path $OutputDirectory 'desktop-working.png');manual_validation='Multi-monitor DPI, pointer hit testing, drag and visual polish remain manual.'}
+$topmostResult=& (Join-Path $PSScriptRoot 'Test-Topmost.ps1') -OutputDirectory (Join-Path $OutputDirectory 'topmost') -PassThru
+$result=[ordered]@{checks=$script:checks;animation_checks=$animationResult.checks;topmost_checks=$topmostResult.checks;result='passed';mode='synthetic';render=(Join-Path $OutputDirectory 'desktop-working.png');manual_validation='Multi-monitor DPI, pointer hit testing, drag, long idle periods and visual polish remain manual.'}
 [IO.File]::WriteAllText((Join-Path $OutputDirectory 'result.json'),($result|ConvertTo-Json), (New-Object Text.UTF8Encoding($false)))
 $result|ConvertTo-Json

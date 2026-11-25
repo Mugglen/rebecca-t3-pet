@@ -40,6 +40,14 @@
 - 候选图库预览在 728px 宽显示完整，console 错误为空；静态 PNG 和 GIF 均已目视检查。图库只标记选择，不自动改桌宠状态。
 - 15:22 重启本机桌宠，新进程存活并持续读到 live/connected/working，启动 stderr 为空。此项基于进程与快照；动画播放的直接证据来自 WPF 测试和 GIF 预览，不声称对隐藏桌宠窗口完成原生 UI 自动化验收。
 
+## 置顶恢复（2026-11-25）
+
+- 用户报告长时间无任务后，切换普通窗口时桌宠被遮挡。现场检查时旧进程仍在正常运行，主窗口的 `WS_EX_TOPMOST` 为 true、可见且非最小化，没有重叠窗口位于其上；因此没有复现当时的触发过程，也不能把空闲时长认定为根因。
+- 代码没有空闲后关闭置顶的分支，但此前仅在初始化、恢复设置和菜单切换时设置置顶，缺少原生标志丢失后的恢复。现在将用户置顶意图单独保存，在既有 500ms UI tick 中、采集器早退之前检查；仅实际丢失时恢复。
+- 专项验证在独立 WPF 测试窗口中注入原生置顶丢失，26 项通过。覆盖相同 idle 快照持续轮询、暂停时恢复、正常普通窗口层级、不抢焦点/移动/缩放、健康窗口不重排、手动关闭与设置重载、GIF clock 保持、隐藏/最小化/关闭不强制显示。初次结果：`tmp/topmost-smoke-20261125-094049/result.json`。
+- 完整桌面检查通过 **28 项桌面 + 27 项动画 + 26 项置顶**，结果为 `tmp/desktop-smoke-20261125-094303/result.json`。独立 reviewer 复跑置顶专项 26 项通过，结果为 `tmp/topmost-review-final-20261125-094356/result.json`。嵌套调用测试时发现的局部函数闭包问题已在测试中修复，再完成上述全套复跑。
+- [Windows 置顶语义](https://learn.microsoft.com/en-us/dotnet/api/system.windows.window.topmost)允许同样置顶的活动窗口位于桌宠上方；补丁不会通过反复拉到最前来争夺层级。[原生恢复调用](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowpos)使用 `SWP_NOACTIVATE`，不改变前台焦点。系统安全桌面、全屏、虚拟桌面切换和原始长待机场景仍不在本次故障注入的验收范围内。
+
 ## 待验收与已知边界
 
 - secret/link 卡片及部分 T3 shell 派生等待语义尚未完整适配，见 [#11](https://github.com/Mugglen/rebecca-t3-pet/issues/11)。
