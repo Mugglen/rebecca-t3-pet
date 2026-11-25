@@ -8,11 +8,12 @@
 )
 $ErrorActionPreference='Stop'
 Import-Module (Join-Path $PSScriptRoot 'Desktop.psm1') -Force
+Import-Module (Join-Path $PSScriptRoot 'Collector.psm1') -Force
 $root=Assert-RebeccaOutputRoot $ProjectRoot
 if ([Threading.Thread]::CurrentThread.ApartmentState -ne 'STA') { throw 'The desktop pet requires PowerShell -STA.' }
 foreach($directory in @('data','logs','tmp')) { [IO.Directory]::CreateDirectory((Join-Path $root $directory)) | Out-Null }
 $env:TEMP=Join-Path $root 'tmp'; $env:TMP=$env:TEMP; $env:PYTHONDONTWRITEBYTECODE='1'
-$data=Join-Path $root 'data'; $statusPath=Join-Path $data ('status-'+$Mode+'.json')
+$data=Join-Path $root 'data'
 $settingsPath=Join-Path $data 'desktop-settings.json'
 $mutex=$null; $ownsMutex=$false; $collector=$null; $timer=$null; $view=$null
 try {
@@ -24,18 +25,8 @@ try {
     $view=New-RebeccaView $root $Config $Mode
     Restore-RebeccaViewState $view $settingsPath
     if (-not $SmokeTest) {
-        $startInfo=New-Object Diagnostics.ProcessStartInfo
-        $startInfo.FileName=$Config.python_path; $startInfo.WorkingDirectory=$root
-        $arguments=@('-B','-m','rebecca_pet.collector','--t3-home',$Config.t3_home,'--output',$statusPath,'--poll',([double]$Config.poll_seconds).ToString([Globalization.CultureInfo]::InvariantCulture),'--parent-pid',([string]$PID))
-        if ($Mode -eq 'demo') { $arguments+='--demo' }
-        foreach($id in $Config.project_ids) { $arguments+=@('--project-id',$id) }
-        # Windows argv quoting: every argument is quoted, with trailing backslashes doubled.
-        $quoted=foreach($argument in $arguments) { '"'+[regex]::Replace([regex]::Replace([string]$argument,'(\\*)"','$1$1\"'),'(\\+)$','$1$1')+'"' }
-        $startInfo.Arguments=$quoted -join ' '
-        $startInfo.UseShellExecute=$false; $startInfo.CreateNoWindow=$true
-        $startInfo.EnvironmentVariables['PYTHONPATH']=Join-Path $root 'src'
-        $collector=New-Object Diagnostics.Process; $collector.StartInfo=$startInfo
-        if (-not $collector.Start()) { throw 'Could not start the status collector.' }
+        $collector=New-RebeccaCollectorSupervisor $root $Config $Mode
+        Update-RebeccaCollectorSupervisor $collector
     }
     $context=$view
     $menu=New-Object Windows.Controls.ContextMenu
@@ -70,8 +61,14 @@ try {
     $timer.Add_Tick({
         if($AutoCloseSeconds -gt 0 -and ([DateTime]::UtcNow-$started).TotalSeconds -ge $AutoCloseSeconds){$context.Window.Close();return}
         if($SmokeTest){if(([DateTime]::UtcNow-$started).TotalSeconds -ge $SmokeSeconds){$context.Window.Close()};return}
-        if($collector.HasExited){Set-RebeccaVisual $context (New-RebeccaUnavailable $Mode '状态采集器已停止，请退出后重新启动。');return}
-        Set-RebeccaVisual $context (Get-RebeccaSnapshot $statusPath $pollSeconds $Mode)
+        Update-RebeccaCollectorSupervisor $collector
+        if($null -eq $collector.Process){Set-RebeccaVisual $context (New-RebeccaUnavailable $Mode $collector.Message);return}
+        $snapshot=Get-RebeccaSnapshot $collector.StatusPath $pollSeconds $Mode
+        if(-not $collector.HasFreshSnapshot){
+            if(Test-RebeccaCollectorSnapshot $collector $snapshot){$collector.HasFreshSnapshot=$true}
+            else{Set-RebeccaVisual $context (New-RebeccaUnavailable $Mode $collector.Message);return}
+        }
+        Set-RebeccaVisual $context $snapshot
     }.GetNewClosure())
     $timer.Start()
     if($SmokeTest){$context.Paused=$true;Set-RebeccaAnimation $context}
@@ -79,7 +76,7 @@ try {
 } finally {
     if($null -ne $timer){$timer.Stop()}
     if($null -ne $view -and -not $SmokeTest){try{Save-RebeccaViewState $view $settingsPath}catch{}}
-    if($null -ne $collector){try{if(-not $collector.HasExited){$collector.Kill();$collector.WaitForExit(3000)|Out-Null}}catch{}finally{$collector.Dispose()}}
+    if($null -ne $collector){try{Stop-RebeccaCollectorSupervisor $collector}catch{}}
     if($ownsMutex){$mutex.ReleaseMutex()}
     if($null -ne $mutex){$mutex.Dispose()}
 }

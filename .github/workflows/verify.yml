@@ -37,3 +37,9 @@ jobs:
           $env:TMP = $env:TEMP
           powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File scripts/Test-Desktop.ps1
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Collector restart and owned-process lifecycle
+        run: |
+          $env:TEMP = Join-Path $pwd 'tmp'
+          $env:TMP = $env:TEMP
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/Test-CollectorLifecycle.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

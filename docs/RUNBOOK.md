@@ -22,6 +22,8 @@
 
 拖动角色调整位置，右键打开菜单；菜单支持退出，窗口响应 Esc。退出应停止该桌宠实例启动的采集器。无需关闭 T3，也不注册开机自启。
 
+采集器写状态文件时若遇到短暂占用，会保留旧文件并退避重试；超过新鲜度阈值时，界面明确显示过期。采集进程异常退出后，窗口显示重新连接，并按 2、4、8、16、30 秒重启，连续运行满 30 秒后重置退避。重启后必须收到本次启动产生的新快照才会恢复状态显示。
+
 ## 只验证采集
 
 在项目目录执行：
@@ -45,12 +47,15 @@ New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
 | 启动时报 Python 不存在 | 在本机配置中填写实际 Python 路径；不要使用 Windows Store 占位命令 |
 | T3 离线 | 确认 T3 正在运行、t3_home 正确、运行定位文件和 environment-id 存在 |
 | 版本不兼容 | 当前适配仅对 0.1.11 核对；升级后重新验证 schema/fixture，不能直接取消版本校验 |
-| 长时间不刷新 | 查看状态观察时间与采集进程错误；旧 working 文件不算在线证据 |
+| 显示正在重新连接 | 等待自动重试；记录提示的退出码并查看下述日志，无需重启 T3 |
+| 长时间不刷新 | 检查状态观察时间、输出目录可写性与日志；旧 working 文件不算在线证据 |
 | 有待处理但仍工作 | 可能是异步提问；请求角标与执行状态本来就可并存 |
 | 部分请求没有提醒 | secret/link 和特殊 shell 派生状态由 [#11](https://github.com/Mugglen/rebecca-t3-pet/issues/11) 跟进 |
 | 角色不可见或位置不合适 | 使用回到主屏功能；位置和 DPI 的人工验收状态见验证报告 |
 
 不需要修改或修复 T3 数据库。排障时保留最小状态字段，不导出聊天、命令、秘密或整个数据库。
+
+真实模式日志在 `data/status-live.log`（采集事件、异常类型和错误码；64 KiB，最多一份 `.log.1` 备份）与 `data/collector-live.lifecycle.log`（启动、退出和退出码；上限 64 KiB）。演示模式文件名中的 `live` 改为 `demo`。日志不包含原始异常正文、聊天或命令；日志无法写入也不会终止采集。
 
 ## 开发验证
 
@@ -58,6 +63,7 @@ New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
 $env:PYTHONPATH = Join-Path $pwd 'src'
 & 'D:\Projects\.venv\Scripts\python.exe' -B -m unittest discover -s tests -v
 powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File scripts/Test-Desktop.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/Test-CollectorLifecycle.ps1
 ```
 
 Windows smoke 使用合成快照验证协议、资源加载和窗口渲染；真实任务验证另外执行。CI 定义在 `.github/workflows/verify.yml`，不会访问作者机器的 T3 数据。
